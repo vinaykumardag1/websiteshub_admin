@@ -52,6 +52,31 @@ export const useTagsStore = create<TagsStore>((set, get) => ({
   },
 
   // -----------------------------
+  // UPDATE TAG
+  // -----------------------------
+  updateTag: async (id, data) => {
+    set({ loading: true, error: null })
+    try {
+      const res = await axiosClient.put<{
+        message: string
+        tag: Tag
+      }>(`/admin/update-tag/${id}`, data)
+
+      set((state) => ({
+        tags: state.tags.map((t) =>
+          t._id === id ? res.data.tag : t
+        ),
+        loading: false
+      }))
+    } catch (error) {
+      set({
+        error: getErrorMessage(error),
+        loading: false
+      })
+    }
+  },
+
+  // -----------------------------
   // DELETE TAG
   // -----------------------------
   deleteTag: async (id) => {

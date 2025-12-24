@@ -53,6 +53,31 @@ export const useCategoryStore = create<CategoryStore>((set) => ({
   },
 
   // --------------------
+  // UPDATE CATEGORY
+  // --------------------
+  updateCategory: async (id, data) => {
+    set({ isLoading: true, error: null })
+    try {
+      const res = await axiosClient.put<{
+        message: string
+        category: Category
+      }>(`/admin/update-category/${id}`, data)
+
+      set((state) => ({
+        categories: state.categories.map((cat) =>
+          cat._id === id ? res.data.category : cat
+        ),
+        isLoading: false
+      }))
+    } catch (error) {
+      set({
+        error: getErrorMessage(error),
+        isLoading: false
+      })
+    }
+  },
+
+  // --------------------
   // DELETE CATEGORY
   // --------------------
   deleteCategory: async (id) => {

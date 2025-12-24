@@ -1,8 +1,14 @@
-import Image from "next/image";
+"use client";
+
+import { redirect } from "next/navigation";
+import { useAuthStore } from "@/stores/authStore";
+
 export default function Home() {
-  return (
-    <>
-    <h1></h1>
-    </>
-  );
+  const { accessToken } = useAuthStore();
+
+  if (!accessToken) {
+    redirect("/auth/login");
+  }
+
+  redirect("/dashboard");
 }

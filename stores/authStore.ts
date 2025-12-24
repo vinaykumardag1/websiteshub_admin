@@ -26,31 +26,37 @@ export const useAuthStore = create<AuthStore>()(
          LOGIN
       ------------------------------------------ */
       login: async (payload: LoginPayload) => {
-        set({ loading: true, errorMessage: null })
-
+        const { username, password } = payload;
+      
+        set({ loading: true, errorMessage: null });
+      
         try {
           const res = await axios.post<LoginResponse>(
             `${API_URL}/admin/admin-login`,
-            payload
-          )
-
-          const { token, admin } = res.data
-
+            {
+              username,
+              password,
+            }
+          );
+      
+          const { token, admin } = res.data;
+      
           set({
             loading: false,
             accessToken: token,
-            user: admin
-          })
-
-          return res.data
+            user: admin,
+          });
+      
+          return res.data;
         } catch (error) {
           set({
             loading: false,
-            errorMessage: getErrorMessage(error)
-          })
-          throw error
+            errorMessage: getErrorMessage(error),
+          });
+          throw error;
         }
       },
+      
 
       /* ------------------------------------------
          REGISTER

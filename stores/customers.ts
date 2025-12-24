@@ -19,7 +19,7 @@ export const useCustomersStore = create<CustomersStore>((set, get) => ({
       )
 
       set({
-        customers: res.data.customers,
+        customers: res.data.users,
         loading: false
       })
     } catch (error) {

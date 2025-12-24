@@ -7,7 +7,7 @@ export interface LoginHistory {
   loggedInAt: string
 }
 
-export interface Customer {
+export interface users {
   _id: string
   firstname: string
   lastname: string
@@ -34,9 +34,11 @@ export interface Customer {
 export interface CustomersStore {
   loading: boolean
   error: string | null
-  customers: Customer[]
+  customers: users[]
 
   fetchCustomers: () => Promise<void>
   blockCustomer: (id: string) => Promise<void>
   unblockCustomer: (id: string) => Promise<void>
+  updateCustomer: (id: string, updatedData: Partial<users>) => Promise<void>
+  deleteCustomer: (id: string) => Promise<void>
 }

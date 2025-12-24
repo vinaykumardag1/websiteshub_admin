@@ -13,5 +13,6 @@ export interface CategoryStore {
 
   fetchCategories: () => Promise<void>
   addCategory: (data: Omit<Category, "slug" | "_id">) => Promise<void>
+  updateCategory: (id: string, data: Omit<Category, "slug" | "_id">) => Promise<void>
   deleteCategory: (id: string) => Promise<void>
 }

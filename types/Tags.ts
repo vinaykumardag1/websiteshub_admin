@@ -11,5 +11,6 @@ export interface TagsStore {
 
   fetchTags: () => Promise<void>
   addTag: (data: Omit<Tag, "_id">) => Promise<void>
+  updateTag: (id: string, data: Omit<Tag, "_id">) => Promise<void>
   deleteTag: (id: string) => Promise<void>
 }
