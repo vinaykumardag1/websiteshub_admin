@@ -30,6 +30,8 @@ import {
   Logout as LogoutIcon,
   AccountCircle as AccountCircleIcon,
   ChevronLeft as ChevronLeftIcon,
+  Visibility as VisibilityIcon,
+  Favorite as FavoriteIcon,
 } from '@mui/icons-material'
 import { useAuthStore } from '@/stores/authStore'
 
@@ -45,6 +47,8 @@ const menuItems = [
   { text: 'Categories', icon: <CategoryIcon />, path: '/dashboard/categories' },
   { text: 'Customers', icon: <PeopleIcon />, path: '/dashboard/customers' },
   { text: 'Tags', icon: <TagIcon />, path: '/dashboard/tags' },
+  { text: 'Visited URLs', icon: <VisibilityIcon />, path: '/dashboard/visitedurls' },
+  { text: 'Favourites', icon: <FavoriteIcon />, path: '/dashboard/favourites' },
 ]
 
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
@@ -52,13 +56,14 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const pathname = usePathname()
   const theme = useTheme()
   const isMobile = useMediaQuery(theme.breakpoints.down('md'))
+
   const [mobileOpen, setMobileOpen] = useState(false)
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
-  
+
   const { user, logout } = useAuthStore()
 
   const handleDrawerToggle = () => {
-    setMobileOpen(!mobileOpen)
+    setMobileOpen(prev => !prev)
   }
 
   const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
@@ -77,27 +82,23 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 
   const drawer = (
     <Box>
-      <Toolbar
-        sx={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          px: [1],
-        }}
-      >
-        <Typography variant="h6" noWrap component="div" sx={{ fontWeight: 700 }}>
+      <Toolbar sx={{ display: 'flex', justifyContent: 'space-between' }}>
+        <Typography variant="h6" fontWeight={700}>
           WebsitesHub
         </Typography>
-        {!isMobile && (
+        {isMobile && (
           <IconButton onClick={handleDrawerToggle}>
             <ChevronLeftIcon />
           </IconButton>
         )}
       </Toolbar>
+
       <Divider />
+
       <List>
         {menuItems.map((item) => {
           const isActive = pathname === item.path
+
           return (
             <ListItem key={item.text} disablePadding>
               <ListItemButton
@@ -110,21 +111,12 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                   '&.Mui-selected': {
                     backgroundColor: 'primary.main',
                     color: 'white',
-                    '&:hover': {
-                      backgroundColor: 'primary.dark',
-                    },
-                    '& .MuiListItemIcon-root': {
-                      color: 'white',
-                    },
+                    '&:hover': { backgroundColor: 'primary.dark' },
+                    '& .MuiListItemIcon-root': { color: 'white' },
                   },
                 }}
               >
-                <ListItemIcon
-                  sx={{
-                    color: isActive ? 'white' : 'inherit',
-                    minWidth: 40,
-                  }}
-                >
+                <ListItemIcon sx={{ minWidth: 40 }}>
                   {item.icon}
                 </ListItemIcon>
                 <ListItemText primary={item.text} />
@@ -138,6 +130,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 
   return (
     <Box sx={{ display: 'flex', minHeight: '100vh' }}>
+      {/* APP BAR */}
       <AppBar
         position="fixed"
         sx={{
@@ -145,100 +138,81 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           ml: { md: `${drawerWidth}px` },
           backgroundColor: 'white',
           color: 'text.primary',
-          boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+          boxShadow: 1,
         }}
       >
         <Toolbar>
           <IconButton
-            color="inherit"
-            aria-label="open drawer"
             edge="start"
             onClick={handleDrawerToggle}
             sx={{ mr: 2, display: { md: 'none' } }}
           >
             <MenuIcon />
           </IconButton>
-          <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
+
+          <Typography variant="h6" sx={{ flexGrow: 1 }}>
             Admin Dashboard
           </Typography>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-            <Typography variant="body2" sx={{ display: { xs: 'none', sm: 'block' } }}>
-              {user?.fullName || user?.username || 'Admin'}
-            </Typography>
-            <IconButton
-              size="large"
-              edge="end"
-              aria-label="account menu"
-              aria-controls="account-menu"
-              aria-haspopup="true"
-              onClick={handleMenuOpen}
-              color="inherit"
-            >
-              <Avatar sx={{ width: 32, height: 32, bgcolor: 'primary.main' }}>
-                {user?.fullName?.[0] || user?.username?.[0] || 'A'}
-              </Avatar>
-            </IconButton>
-            <Menu
-              id="account-menu"
-              anchorEl={anchorEl}
-              open={Boolean(anchorEl)}
-              onClose={handleMenuClose}
-              transformOrigin={{ horizontal: 'right', vertical: 'top' }}
-              anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
-            >
-              <MenuItem onClick={handleMenuClose}>
-                <AccountCircleIcon sx={{ mr: 1 }} />
-                Profile
-              </MenuItem>
-              <MenuItem onClick={handleLogout}>
-                <LogoutIcon sx={{ mr: 1 }} />
-                Logout
-              </MenuItem>
-            </Menu>
-          </Box>
+
+          <Typography sx={{ mr: 2, display: { xs: 'none', sm: 'block' } }}>
+            {user?.fullName || user?.username || 'Admin'}
+          </Typography>
+
+          <IconButton onClick={handleMenuOpen}>
+            <Avatar sx={{ bgcolor: 'primary.main' }}>
+              {user?.fullName?.[0] || user?.username?.[0] || 'A'}
+            </Avatar>
+          </IconButton>
+
+          <Menu
+            anchorEl={anchorEl}
+            open={Boolean(anchorEl)}
+            onClose={handleMenuClose}
+          >
+            <MenuItem onClick={handleMenuClose}>
+              <AccountCircleIcon sx={{ mr: 1 }} />
+              Profile
+            </MenuItem>
+            <MenuItem onClick={handleLogout}>
+              <LogoutIcon sx={{ mr: 1 }} />
+              Logout
+            </MenuItem>
+          </Menu>
         </Toolbar>
       </AppBar>
-      <Box
-        component="nav"
-        sx={{ width: { md: drawerWidth }, flexShrink: { md: 0 } }}
-      >
+
+      {/* DRAWERS */}
+      <Box component="nav" sx={{ width: { md: drawerWidth } }}>
         <Drawer
           variant="temporary"
           open={mobileOpen}
           onClose={handleDrawerToggle}
-          ModalProps={{
-            keepMounted: true,
-          }}
           sx={{
             display: { xs: 'block', md: 'none' },
-            '& .MuiDrawer-paper': {
-              boxSizing: 'border-box',
-              width: drawerWidth,
-            },
+            '& .MuiDrawer-paper': { width: drawerWidth },
           }}
         >
           {drawer}
         </Drawer>
+
         <Drawer
           variant="permanent"
+          open
           sx={{
             display: { xs: 'none', md: 'block' },
-            '& .MuiDrawer-paper': {
-              boxSizing: 'border-box',
-              width: drawerWidth,
-            },
+            '& .MuiDrawer-paper': { width: drawerWidth },
           }}
-          open
         >
           {drawer}
         </Drawer>
       </Box>
+
+      {/* MAIN */}
       <Box
         component="main"
         sx={{
           flexGrow: 1,
           p: 3,
-          width: { md: `calc(100% - ${drawerWidth}px)` },
           backgroundColor: '#f5f5f5',
           minHeight: '100vh',
         }}
@@ -249,4 +223,3 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     </Box>
   )
 }
-

@@ -25,18 +25,22 @@ export interface Item {
   createdAt: string
   updatedAt: string
 }
+export interface MobileApp{
+  playStore:string,
+  appStore:string
+}
 export interface ItemPayload {
   websitename: string
   websiteUrl: string
   description: string
   category: string
-  mobileApp: boolean
+  mobileApp:MobileApp,
   image: string
   ai: boolean
   pricingType: string
   pricingDetails: string
-  tags: string        // backend receives single string
+  tags: string[]       // backend receives single string
   rating: number
-  features: string     // backend receives single string
+  features: string[]   // backend receives single string
   country: string
 }

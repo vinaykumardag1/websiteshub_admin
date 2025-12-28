@@ -6,9 +6,11 @@ import { useAuthStore } from "@/stores/authStore";
 export default function Home() {
   const { accessToken } = useAuthStore();
 
-  if (!accessToken) {
-    redirect("/auth/login");
+  if (accessToken==="") {
+    redirect("/login");
+  }else{
+     redirect("/dashboard");
   }
 
-  redirect("/dashboard");
+ 
 }

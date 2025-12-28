@@ -8,7 +8,12 @@ interface ItemStore {
   errorMessage: string | null
   items: Item[]
 
-  fetchItems: () => Promise<void>
+  page: number
+  totalPages: number
+  totalItems: number
+  limit: number
+
+  fetchItems: (page?: number) => Promise<void>
   postItem: (data: ItemPayload) => Promise<void>
   updateItem: (id: string, data: ItemPayload) => Promise<void>
   deleteItem: (id: string) => Promise<void>
@@ -19,22 +24,34 @@ export const useItemStore = create<ItemStore>((set, get) => ({
   errorMessage: null,
   items: [],
 
+  page: 1,
+  totalPages: 1,
+  totalItems: 0,
+  limit: 10,
+
   /* ------------------------------------------
-     FETCH ITEMS
+     FETCH ITEMS (PAGINATED)
   ------------------------------------------ */
-  fetchItems: async () => {
+  fetchItems: async (page = 1) => {
     set({ loading: true, errorMessage: null })
     try {
-      const res = await axiosClient.get("/admin/items")
+      const { limit } = get()
+
+      const res = await axiosClient.get("/admin/items", {
+        params: { page, limit },
+      })
 
       set({
         loading: false,
-        items: res.data.items || []  // must match backend field
+        items: res.data.items || [],
+        page: res.data.page,
+        totalPages: res.data.totalPages,
+        totalItems: res.data.total,
       })
     } catch (error) {
       set({
         loading: false,
-        errorMessage: getErrorMessage(error)
+        errorMessage: getErrorMessage(error),
       })
     }
   },
@@ -47,14 +64,14 @@ export const useItemStore = create<ItemStore>((set, get) => ({
     try {
       const res = await axiosClient.post("/admin/add-item", data)
 
-      set({
-        loading: false,
-        items: [...get().items, res.data.item] // append returned item
-      })
+      // refetch current page to keep pagination correct
+      await get().fetchItems(get().page)
+
+      set({ loading: false })
     } catch (error) {
       set({
         loading: false,
-        errorMessage: getErrorMessage(error)
+        errorMessage: getErrorMessage(error),
       })
     }
   },
@@ -65,18 +82,14 @@ export const useItemStore = create<ItemStore>((set, get) => ({
   updateItem: async (id: string, data: ItemPayload) => {
     set({ loading: true, errorMessage: null })
     try {
-      const res = await axiosClient.put(`/admin/update-item/${id}`, data)
+      await axiosClient.put(`/admin/update-item/${id}`, data)
+      await get().fetchItems(get().page)
 
-      set({
-        loading: false,
-        items: get().items.map((item) =>
-          item._id === id ? res.data.item : item
-        )
-      })
+      set({ loading: false })
     } catch (error) {
       set({
         loading: false,
-        errorMessage: getErrorMessage(error)
+        errorMessage: getErrorMessage(error),
       })
     }
   },
@@ -89,15 +102,18 @@ export const useItemStore = create<ItemStore>((set, get) => ({
     try {
       await axiosClient.delete(`/admin/delete-item/${id}`)
 
-      set({
-        loading: false,
-        items: get().items.filter((item) => item._id !== id)
-      })
+      // handle page underflow
+      const { page, items } = get()
+      const newPage = items.length === 1 && page > 1 ? page - 1 : page
+
+      await get().fetchItems(newPage)
+
+      set({ loading: false })
     } catch (error) {
       set({
         loading: false,
-        errorMessage: getErrorMessage(error)
+        errorMessage: getErrorMessage(error),
       })
     }
-  }
+  },
 }))

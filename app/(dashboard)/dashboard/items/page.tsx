@@ -6,8 +6,7 @@ import {
   Typography,
   Button,
   Alert,
-  Paper,
-  Chip,
+  Pagination,
 } from '@mui/material'
 import { Add as AddIcon } from '@mui/icons-material'
 import DashboardLayout from '@/components/dashboard/DashboardLayout'
@@ -17,28 +16,27 @@ import { useItemStore } from '@/stores/itemStore'
 import { Item } from '@/types/item'
 
 export default function ItemsPage() {
-  const { items, loading, errorMessage, fetchItems, postItem, updateItem, deleteItem } = useItemStore()
+  const {
+    items,
+    loading,
+    errorMessage,
+    fetchItems,
+    postItem,
+    updateItem,
+    deleteItem,
+    page,
+    totalPages,
+  } = useItemStore()
+
   const [formOpen, setFormOpen] = useState(false)
   const [selectedItem, setSelectedItem] = useState<Item | null>(null)
 
   useEffect(() => {
-    fetchItems()
+    fetchItems(1)
   }, [fetchItems])
 
-  const handleAdd = () => {
-    setSelectedItem(null)
-    setFormOpen(true)
-  }
-
-  const handleEdit = (item: Item) => {
-    setSelectedItem(item)
-    setFormOpen(true)
-  }
-
-  const handleDelete = async (item: Item) => {
-    if (window.confirm(`Are you sure you want to delete "${item.websitename}"?`)) {
-      await deleteItem(item._id)
-    }
+  const handlePageChange = (_: any, value: number) => {
+    fetchItems(value)
   }
 
   const handleSubmit = async (data: any) => {
@@ -59,85 +57,49 @@ export default function ItemsPage() {
       label: 'URL',
       minWidth: 200,
       format: (value) => (
-        <a href={value} target="_blank" rel="noopener noreferrer" style={{ color: '#1976d2' }}>
+        <a href={value} target="_blank" rel="noopener noreferrer">
           {value}
         </a>
       ),
     },
-    {
-      id: 'category',
-      label: 'Category',
-      minWidth: 120,
-    },
-    {
-      id: 'rating',
-      label: 'Rating',
-      minWidth: 100,
-      format: (value) => `${value}/5`,
-    },
-    {
-      id: 'ai',
-      label: 'AI',
-      minWidth: 80,
-      align: 'center',
-      format: (value) => (
-        <Chip
-          label={value ? 'Yes' : 'No'}
-          color={value ? 'success' : 'default'}
-          size="small"
-        />
-      ),
-    },
-    {
-      id: 'pricingType',
-      label: 'Pricing',
-      minWidth: 100,
-    },
-    {
-      id: 'createdAt',
-      label: 'Created',
-      minWidth: 120,
-      format: (value) => new Date(value).toLocaleDateString(),
-    },
+    { id: 'category', label: 'Category', minWidth: 120 },
+    { id: 'rating', label: 'Rating', minWidth: 100, format: v => `${v}/5` },
   ]
 
   return (
     <DashboardLayout>
       <Container maxWidth="xl">
-        <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-          <Box>
-            <Typography variant="h4" component="h1" gutterBottom fontWeight={700}>
-              Items Management
-            </Typography>
-            <Typography variant="body1" color="textSecondary">
-              Manage your website items and listings
-            </Typography>
-          </Box>
-          <Button
-            variant="contained"
-            startIcon={<AddIcon />}
-            onClick={handleAdd}
-            sx={{ minWidth: 140 }}
-          >
+        <Box display="flex" justifyContent="space-between" mb={3}>
+          <Typography variant="h4" fontWeight={700}>
+            Items Management
+          </Typography>
+          <Button variant="contained" startIcon={<AddIcon />} onClick={() => setFormOpen(true)}>
             Add Item
           </Button>
         </Box>
 
-        {errorMessage && (
-          <Alert severity="error" sx={{ mb: 3 }} onClose={() => {}}>
-            {errorMessage}
-          </Alert>
-        )}
+        {errorMessage && <Alert severity="error">{errorMessage}</Alert>}
 
         <DataTable
           columns={columns}
           rows={items}
           loading={loading}
-          onEdit={handleEdit}
-          onDelete={handleDelete}
+          onEdit={setSelectedItem}
+          onDelete={deleteItem}
           getRowId={(row) => row._id}
-          emptyMessage="No items found. Click 'Add Item' to create one."
         />
+
+        {/* PAGINATION */}
+        {totalPages > 1 && (
+          <Box display="flex" justifyContent="center" mt={3}>
+            <Pagination
+              count={totalPages}
+              page={page}
+              onChange={handlePageChange}
+              color="primary"
+            />
+          </Box>
+        )}
 
         <ItemForm
           open={formOpen}
@@ -153,4 +115,3 @@ export default function ItemsPage() {
     </DashboardLayout>
   )
 }
-
